@@ -4,9 +4,9 @@ from typing import List
 
 from investimentos import calcular_juros_compostos
 from investimentos_aportes import calcular_montante_com_aportes
-from inss import calcular_inss
+from inss import calcular_inss, gerar_grafico_inss
 from impostos import calcular_irrf_final as calcular_irrf
-from equacao_reta import calcular_equacao_reta, gerar_grafico_reta
+from equacao_reta import gerar_grafico_reta
 from graficos import gerar_grafico_valores_finais
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -34,10 +34,10 @@ class JurosAporteInput(BaseModel):
     tempo: int
     aporte_mensal: float
 
-class INSSInput(BaseModel):
+class INSSRequest(BaseModel):
     salario: float
 
-class IRRFInput(BaseModel):
+class IRRFRequest(BaseModel):
     salario: float
     dependentes: int
 
@@ -77,12 +77,17 @@ def juros_com_aporte(data: JurosAporteInput):
     return {"montante": round(resultado, 2)}
 
 @app.post("/api/inss")
-def inss(data: INSSInput):
-    desconto = calcular_inss(data.salario)
-    return {"desconto_inss": round(desconto, 2)}
+async def calcular_inss_api(req: INSSRequest): # type: ignore
+    salario = req.salario
+    inss = calcular_inss(salario)
+    grafico_base64 = calcular_inss(salario, inss)
 
+    return {
+        "inss": inss,
+        "grafico_base64": grafico_base64
+    }
 @app.post("/api/irrf")
-def irrf(data: IRRFInput):
+def irrf(data: IRRFRequest):
     desconto = calcular_irrf(data.salario, data.dependentes)
     return {"desconto_irrf": round(desconto, 2)}
 

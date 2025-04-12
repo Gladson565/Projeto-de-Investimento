@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Projeto de Investimentos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f7;
+      margin: 0;
+      padding: 20px;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: #00796b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .tab.active {
+      background: #004d40;
+    }
+    .content {
+      display: none;
+    }
+    .content.active {
+      display: block;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #00796b;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .resultado {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Abas -->
+  <div class="tabs">
+    <button class="tab active" data-tab="juros">Juros Compostos</button>
+    <button class="tab" data-tab="aportes">Com Aportes</button>
+    <button class="tab" data-tab="irrf">IRRF</button>
+    <button class="tab" data-tab="inss">INSS</button>
+    <button class="tab" data-tab="equacao_reta">Equação da Reta</button>
+  </div>
+
+  <!-- Juros Compostos -->
+  <div class="content active" id="juros">
+    <h2>Juros Compostos</h2>
+    <label>Capital Inicial (R$)</label><input type="number" id="capitalJuros">
+    <label>Tempo (meses)</label><input type="number" id="tempoJuros">
+    <label>Taxa de Aplicação (%)</label><input type="number" id="taxaJuros">
+    <label>IPCA Estimado (%)</label><input type="number" id="ipcaJuros">
+    <button onclick="calcularJurosCompostos()">Calcular</button>
+    <div class="resultado" id="resultadoJuros"></div>
+    <p id="resultado"></p>
+    <img id="grafico" src="" alt="Gráfico de evolução dos juros" />
+  </div>
+
+  <!-- Com Aportes -->
+  <div class="content" id="aportes">
+    <h2>Juros com Aportes</h2>
+    <label>Capital Inicial (R$)</label><input type="number" id="capitalAportes">
+    <label>Aporte Mensal (R$)</label><input type="number" id="aporteMensal">
+    <label>Tempo (meses)</label><input type="number" id="tempoAportes">
+    <label>Taxa de Aplicação (%)</label><input type="number" id="taxaAportes">
+    <button onclick="calcularAportes()">Calcular</button>
+    <p id="resultado-aporte"></p>
+    <p id="resultado-final"></p>
+    <img id="juros-aporte" src="" alt="Gráfico de evolução com aportes" />
+  </div>
+
+  <!-- IRRF -->
+  <div class="content" id="irrf">
+    <h2>Cálculo de IRRF</h2>
+    <label>Salário Bruto (R$)</label><input type="number" id="salarioBruto">
+    <button onclick="calcularIRRF()">Calcular</button>
+    <div class="resultado" id="resultadoIRRF"></div>
+  </div>
+
+  <!-- INSS -->
+  <div class="content" id="inss">
+    <h2>Cálculo de INSS</h2>
+    <label>Salário (R$)</label><input type="number" id="salarioINSS">
+    <button onclick="calcularINSS()">Calcular</button>
+    <div class="resultado" id="resultadoINSS"></div>
+    <img id="graficoINSS" src="" alt="Gráfico INSS" />
+  </div>
+
+  <!-- Equação da Reta -->
+  <div class="content" id="equacao_reta">
+    <h2>Equação da Reta</h2>
+    <label>Coeficiente Angular (m)</label><input type="number" id="coefAngular">
+    <label>Coeficiente Linear (b)</label><input type="number" id="coefLinear">
+    <label>Valor de X</label><input type="number" id="valorX">
+    <button onclick="calcularEquacaoReta()">Calcular</button>
+    <div class="resultado" id="resultadoReta"></div>
+  </div>
+
+  <script>
+    // Troca de abas
+    const tabs = document.querySelectorAll(".tab");
+    const contents = document.querySelectorAll(".content");
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        contents.forEach(c => c.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.tab).classList.add("active");
+      });
+    });
+
+    async function calcularJurosCompostos() {
+      const capital = parseFloat(document.getElementById("capitalJuros").value);
+      const taxa = parseFloat(document.getElementById("taxaJuros").value);
+      const tempo = parseInt(document.getElementById("tempoJuros").value);
+
+      const resMontante = await fetch("http://localhost:8000/api/juros-compostos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ capital, taxa, tempo })
+      });
+      const json = await resMontante.json();
+      document.getElementById("resultado").innerText = `Montante Final: R$ ${json.montante}`;
+
+      const resGrafico = await fetch("http://localhost:8000/api/grafico", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ capital_inicial: capital, taxa_juros: taxa, tempo, aporte: 0 })
+      });
+      const grafico = await resGrafico.json();
+      document.getElementById("grafico").src = `data:image/png;base64,${grafico.grafico_base64}`;
+    }
+
+    async function calcularAportes() {
+      const capital = parseFloat(document.getElementById("capitalAportes").value);
+      const aporte = parseFloat(document.getElementById("aporteMensal").value);
+      const tempo = parseInt(document.getElementById("tempoAportes").value);
+      const taxa = parseFloat(document.getElementById("taxaAportes").value);
+
+      const res = await fetch("http://localhost:8000/api/juros-aporte", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ capital, aporte_mensal: aporte, tempo, taxa })
+      });
+      const resultado = await res.json();
+      document.getElementById("resultado-aporte").innerText = `Montante: R$ ${resultado.montante.toFixed(2)}`;
+      document.getElementById("resultado-final").innerText = `Total Acumulado: R$ ${resultado.montante.toFixed(2)}`;
+
+      const resGrafico = await fetch("http://localhost:8000/api/grafico", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ capital_inicial: capital, taxa_juros: taxa, tempo, aporte })
+      });
+      const grafico = await resGrafico.json();
+      document.getElementById("juros-aporte").src = `data:image/png;base64,${grafico.grafico_base64}`;
+    }
+
+    async function calcularIRRF() {
+      const salario = parseFloat(document.getElementById("salarioBruto").value);
+      const res = await fetch("http://localhost:8000/api/irrf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ salario })
+      });
+      const resultado = await res.json();
+      document.getElementById("resultadoIRRF").innerText = `Desconto IRRF: R$ ${resultado.irrf.toFixed(2)}`;
+    }
+
+    async function calcularINSS() {
+      const salario = parseFloat(document.getElementById("salarioINSS").value);
+      const res = await fetch("http://localhost:8000/api/inss", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ salario })
+      });
+      const resultado = await res.json();
+      document.getElementById("resultadoINSS").innerText = `Desconto INSS: R$ ${resultado.inss.toFixed(2)}`;
+
+      if (resultado.grafico_base64) {
+        document.getElementById("graficoINSS").src = `data:image/png;base64,${resultado.grafico_base64}`;
+      }
+    }
+
+    async function calcularEquacaoReta() {
+      const m = parseFloat(document.getElementById("coefAngular").value);
+      const b = parseFloat(document.getElementById("coefLinear").value);
+      const x = parseFloat(document.getElementById("valorX").value);
+
+      const res = await fetch("http://localhost:8000/api/equacao-reta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ m, b, x })
+      });
+      const resultado = await res.json();
+      document.getElementById("resultadoReta").innerText = `Resultado y = ${resultado.y}`;
+    }
+  </script>
+</body>
+</html>

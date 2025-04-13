@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Céu Estrelado</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<style>
+   /* Fundo com imagem */
+   body {
+  margin: 0;
+  background: radial-gradient(#000015, #000);
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Conteúdo com leve desfoque */
+.conteudo {
+  position: absolute;
+  z-index: 2;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Estrelas em CSS */
+.estrelas {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background: transparent;
+}
+
+.estrelas::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  box-shadow:
+    100px 200px white,
+    150px 80px white,
+    300px 400px white,
+    50px 90px white,
+    700px 300px white,
+    400px 600px white,
+    800px 200px white,
+    650px 500px white,
+    1200px 100px white,
+    900px 600px white;
+  animation: piscar 2s infinite alternate;
+}
+
+/* Animação de piscar */
+
+</style>
+<body>
+    <div class="estrelas"></div>
+    <div class="conteudo">
+      <h1>Bem-vindo ao Universo</h1>
+      <p>As estrelas dançam no silêncio da noite.</p>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de IRRF</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .calculator-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-field {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--success-color);
+            margin: 10px 0;
+        }
+
+        .tax-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--secondary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: var(--accent-color);
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .info-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="calculator-card">
+            <h2>Calculadora de IRRF</h2>
+            
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="salarioBruto">Salário Base (R$)</label>
+                    <input type="number" id="salarioBruto" placeholder="Ex: 5000.00" step="0.01" min="0">
+                    <p class="info-text">Informe o salário após descontar o INSS</p>
+                </div>
+            </div>
+            
+            <button onclick="calcularIRRF()">Calcular IRRF</button>
+            
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Calculando...</p>
+            </div>
+            
+            <div class="result-container" id="result-container" style="display: none;">
+                <div class="result-value" id="resultadoIRRF"></div>
+                <div class="tax-info" id="tax-info"></div>
+            </div>
+            
+            <p class="error-message" id="error-message"></p>
+        </div>
+    </div>
+
+    <script>
+        async function calcularIRRF() {
+            const salario = parseFloat(document.getElementById("salarioBruto").value);
+            const resultadoElement = document.getElementById("resultadoIRRF");
+            const taxInfoElement = document.getElementById("tax-info");
+            const loadingElement = document.getElementById("loading");
+            const errorElement = document.getElementById("error-message");
+            const resultContainer = document.getElementById("result-container");
+            
+            // Resetar exibições
+            resultadoElement.textContent = "";
+            taxInfoElement.textContent = "";
+            resultContainer.style.display = "none";
+            errorElement.textContent = "";
+            loadingElement.style.display = "block";
+            
+            // Validação do campo
+            if (isNaN(salario) || salario <= 0) {
+                loadingElement.style.display = "none";
+                errorElement.textContent = "Por favor, informe um valor válido para o salário.";
+                return;
+            }
+            
+            try {
+                // Chamada para cálculo do IRRF
+                const res = await fetch("http://localhost:8000/api/irrf", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ salario })
+                });
+                
+                if (!res.ok) {
+                    throw new Error("Erro no cálculo do IRRF");
+                }
+                
+                const resultado = await res.json();
+                resultadoElement.textContent = `Desconto IRRF: R$ ${resultado.irrf.toFixed(2)}`;
+                
+                // Adiciona informação sobre a faixa de tributação (se disponível na API)
+                if (resultado.faixa) {
+                    taxInfoElement.textContent = `Faixa de tributação: ${resultado.faixa}`;
+                }
+                
+                resultContainer.style.display = "block";
+                
+            } catch (error) {
+                console.error("Erro:", error);
+                errorElement.textContent = "Ocorreu um erro ao calcular o IRRF. Por favor, tente novamente.";
+            } finally {
+                loadingElement.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

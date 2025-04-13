@@ -77,14 +77,17 @@ def juros_com_aporte(data: JurosAporteInput):
     return {"montante": round(resultado, 2)}
 
 @app.post("/api/inss")
-async def calcular_inss_api(req: INSSRequest): # type: ignore
-    salario = req.salario
-    inss = calcular_inss(salario)
-    grafico_base64 = calcular_inss(salario, inss)
+async def calcular_inss_api(req: INSSRequest):
+    salario_usuario = req.salario
+    inss_usuario = round(calcular_inss(salario_usuario), 2)
+    salarios, descontos = gerar_dados_inss_grafico()
 
     return {
-        "inss": inss,
-        "grafico_base64": grafico_base64
+        "inss": inss_usuario,
+        "grafico": {
+            "salarios": salarios,
+            "descontos": descontos
+        }
     }
 @app.post("/api/irrf")
 def irrf(data: IRRFRequest):

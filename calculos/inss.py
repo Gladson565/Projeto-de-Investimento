@@ -5,30 +5,6 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
-app = FastAPI()
-
-# Libera o frontend (CORS)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # ou especifique ["http://localhost:5500"] por segurança
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class INSSRequest(BaseModel):
-    salario: float
-
-@app.post("/api/inss")
-async def calcular_inss_api(req: INSSRequest):
-    salario = req.salario
-    inss = calcular_inss(salario)
-    grafico_base64 = gerar_grafico_inss(salario, inss)
-
-    return {
-        "inss": inss,
-        "grafico_base64": grafico_base64
-    }
-
 # -------------------- LÓGICA DO CÁLCULO -----------------------
 
 def calcular_inss(salario):

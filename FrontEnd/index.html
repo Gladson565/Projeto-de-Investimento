@@ -111,12 +111,15 @@
 
   <!-- Equação da Reta -->
   <div class="content" id="equacao_reta">
-    <h2>Equação da Reta</h2>
-    <label>Coeficiente Angular (m)</label><input type="number" id="coefAngular">
-    <label>Coeficiente Linear (b)</label><input type="number" id="coefLinear">
-    <label>Valor de X</label><input type="number" id="valorX">
-    <button onclick="calcularEquacaoReta()">Calcular</button>
-    <div class="resultado" id="resultadoReta"></div>
+    <input type="number" id="x1" placeholder="x1">
+    <input type="number" id="y1" placeholder="y1">
+    <input type="number" id="x2" placeholder="x2">
+    <input type="number" id="y2" placeholder="y2">
+    <button onclick="gerarGrafico()">Gerar Gráfico</button>
+
+    <img id="grafico" src="" alt="Gráfico da reta" style="display: none;">
+    <p id="mensagem" style="color: red;"></p>
+
   </div>
 
   <script>
@@ -205,19 +208,41 @@
       }
     }
 
-    async function calcularEquacaoReta() {
-      const m = parseFloat(document.getElementById("coefAngular").value);
-      const b = parseFloat(document.getElementById("coefLinear").value);
-      const x = parseFloat(document.getElementById("valorX").value);
+    async function gerarGrafico() {
+            const x1 = parseFloat(document.getElementById('x1').value);
+            const y1 = parseFloat(document.getElementById('y1').value);
+            const x2 = parseFloat(document.getElementById('x2').value);
+            const y2 = parseFloat(document.getElementById('y2').value);
+            const mensagem = document.getElementById('mensagem');
+            const img = document.getElementById('grafico');
 
-      const res = await fetch("http://localhost:8000/api/equacao-reta", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ m, b, x })
-      });
-      const resultado = await res.json();
-      document.getElementById("resultadoReta").innerText = `Resultado y = ${resultado.y}`;
-    }
+            mensagem.textContent = "";
+            img.style.display = "none";
+
+            if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+                mensagem.textContent = "Por favor, preencha todos os campos corretamente.";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:8000/api/equacao-reta-grafico", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ x1, y1, x2, y2 })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    img.src = `data:image/png;base64,${data.grafico_base64}`;
+                    img.style.display = "block";
+                } else {
+                    mensagem.textContent = "Erro ao gerar gráfico.";
+                }
+            } catch (error) {
+                mensagem.textContent = "Erro de conexão com o servidor.";
+                console.error(error);
+            }
+        }
   </script>
 </body>
 </html>

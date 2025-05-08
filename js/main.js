@@ -1,4 +1,4 @@
-fetch("http://127.0.0.1:8000/api/equacao-reta-grafico", {
+fetch("http://0.0.0.0:10000/api/equacao-reta-grafico", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

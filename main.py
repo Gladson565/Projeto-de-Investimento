@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 from investimentos import calcular_juros_compostos
 from investimentos_aportes import calcular_montante_com_aportes
@@ -20,6 +23,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Montar a pasta de arquivos estáticos
+app.mount("/css", StaticFiles(directory="css"), name="css")
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
+# Rota para a página principal
+@app.get("/")
+async def read_index():
+    return FileResponse('index.html')
+
+# Rotas para outras páginas HTML
+@app.get("/jurosCompostos.html")
+async def read_juros_compostos():
+    return FileResponse('jurosCompostos.html')
+
+@app.get("/irrf.html")
+async def read_irrf():
+    return FileResponse('irrf.html')
+
+@app.get("/inss.html")
+async def read_inss():
+    return FileResponse('inss.html')
+
+@app.get("/ipca.html")
+async def read_ipca():
+    return FileResponse('ipca.html')
+
+@app.get("/equacao.htm")
+async def read_equacao():
+    return FileResponse('equacao.htm')
 
 # ---------- MODELOS ----------
 

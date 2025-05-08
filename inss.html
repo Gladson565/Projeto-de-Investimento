@@ -239,10 +239,9 @@
             }
             
             try {
-                console.log("Enviando requisição para:", "http://localhost:8000/api/inss");
                 console.log("Dados:", JSON.stringify({ salario: salario }));
                 
-                const res = await fetch("http://localhost:8000/api/inss", {
+                const res = await fetch("/api/inss", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

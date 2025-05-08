@@ -259,7 +259,7 @@
             
             try {
                 // Chamada para cálculo do montante
-                const resMontante = await fetch("http://localhost:8000/api/juros-compostos", {
+                const resMontante = await fetch("/api/juros-compostos", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ capital, taxa, tempo, ipca })
@@ -273,7 +273,7 @@
                 resultadoElement.innerText = `Montante Final: ${formatarMoeda(json.montante)}`;
                 
                 // Chamada para geração do gráfico
-                const resGrafico = await fetch("http://localhost:8000/api/grafico", {
+                const resGrafico = await fetch("/api/grafico", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 

@@ -256,7 +256,7 @@
             
             try {
                 // Chamada para cálculo do IRRF
-                const res = await fetch("http://localhost:8000/api/irrf", {
+                const res = await fetch("/api/irrf", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ salario, dependentes })

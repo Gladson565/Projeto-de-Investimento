@@ -253,8 +253,8 @@
             }
             
             try {
-                // Chamada para cálculo do investimento
-                const res = await fetch("http://localhost:8000/api/juros-aporte", {
+                // Chamada API para cálculo do montante com aportes
+                const res = await fetch("/api/juros-aporte", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
@@ -274,7 +274,7 @@
                 resultadoFinal.textContent = `Total Acumulado: R$ ${resultado.montante.toFixed(2)}`;
                 
                 // Chamada para geração do gráfico
-                const resGrafico = await fetch("http://localhost:8000/api/grafico", {
+                const resGrafico = await fetch("/api/grafico", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 

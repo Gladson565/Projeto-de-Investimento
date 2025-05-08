@@ -6,7 +6,7 @@
     <title>Gerador de Gráfico de Reta</title>
     <style>
         :root {
-            --primary-color: #178582;
+            --primary-color: #2c3e50;
             --secondary-color: #3498db;
             --accent-color: #e74c3c;
             --light-color: #ecf0f1;
@@ -25,7 +25,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0a1828;
+            background-color: #f5f7fa;
             color: var(--dark-color);
             line-height: 1.6;
             padding: 20px;
@@ -39,7 +39,7 @@
         }
 
         .graph-card {
-            background-color: rgb(255, 255, 255);
+            background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             padding: 30px;
@@ -50,7 +50,9 @@
             color: var(--primary-color);
             margin-bottom: 25px;
             text-align: center;
-            font-size: 2rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
         }
 
         .input-group {
@@ -160,12 +162,19 @@
         .equation-display {
             margin: 20px 0;
             padding: 15px;
-            background-color: #f8f9fa;
+            background-color: var(--light-color);
             border-radius: var(--border-radius);
             font-family: monospace;
             font-size: 1.1rem;
             text-align: center;
             display: none;
+        }
+        
+        .info-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
         }
     </style>
 </head>
@@ -175,25 +184,33 @@
         <div class="graph-card">
             <h1>Gerador de Gráfico de Reta</h1>
             
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="index.html" style="text-decoration: none; color: var(--secondary-color); font-weight: 500;">← Voltar ao menu</a>
+            </div>
+            
             <div class="input-group">
                 <div class="input-field">
                     <label for="x1">Coordenada X₁</label>
                     <input type="number" id="x1" placeholder="Ex: 1" step="any">
+                    <p class="info-text">Informe a coordenada X do primeiro ponto</p>
                 </div>
                 
                 <div class="input-field">
                     <label for="y1">Coordenada Y₁</label>
                     <input type="number" id="y1" placeholder="Ex: 2" step="any">
+                    <p class="info-text">Informe a coordenada Y do primeiro ponto</p>
                 </div>
                 
                 <div class="input-field">
                     <label for="x2">Coordenada X₂</label>
                     <input type="number" id="x2" placeholder="Ex: 3" step="any">
+                    <p class="info-text">Informe a coordenada X do segundo ponto</p>
                 </div>
                 
                 <div class="input-field">
                     <label for="y2">Coordenada Y₂</label>
                     <input type="number" id="y2" placeholder="Ex: 4" step="any">
+                    <p class="info-text">Informe a coordenada Y do segundo ponto</p>
                 </div>
             </div>
             
@@ -206,7 +223,8 @@
             
             <div class="equation-display" id="equation-display"></div>
             
-            <div class="result-container">
+            <div class="result-container" id="result-container" style="display: none;">
+                <p class="info-text">O gráfico abaixo representa a equação da reta que passa pelos pontos informados.</p>
                 <img id="grafico" src="" alt="Gráfico da reta">
             </div>
             
@@ -222,11 +240,16 @@
           const y2 = parseFloat(document.getElementById('y2').value);
           const mensagem = document.getElementById('mensagem');
           const img = document.getElementById('grafico');
+          const resultContainer = document.getElementById('result-container');
+          const loadingElement = document.getElementById('loading');
 
           mensagem.textContent = "";
           img.style.display = "none";
+          resultContainer.style.display = "none";
+          loadingElement.style.display = "block";
 
           if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+              loadingElement.style.display = "none";
               mensagem.textContent = "Por favor, preencha todos os campos corretamente.";
               return;
           }
@@ -239,13 +262,26 @@
               });
 
               const data = await response.json();
+              loadingElement.style.display = "none";
+              
               if (response.ok) {
                   img.src = `data:image/png;base64,${data.grafico_base64}`;
                   img.style.display = "block";
+                  resultContainer.style.display = "block";
+                  
+                  // Calcular e exibir a equação da reta
+                  if (x1 !== x2) {
+                      const a = (y2 - y1) / (x2 - x1);
+                      const b = y1 - a * x1;
+                      const equationDisplay = document.getElementById('equation-display');
+                      equationDisplay.textContent = `Equação da reta: y = ${a.toFixed(2)}x ${b >= 0 ? '+ ' + b.toFixed(2) : '- ' + Math.abs(b).toFixed(2)}`;
+                      equationDisplay.style.display = "block";
+                  }
               } else {
                   mensagem.textContent = "Erro ao gerar gráfico.";
               }
           } catch (error) {
+              loadingElement.style.display = "none";
               mensagem.textContent = "Erro de conexão com o servidor.";
               console.error(error);
           }

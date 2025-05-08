@@ -130,6 +130,17 @@
             text-align: center;
         }
 
+        #graficoIRRF {
+            max-width: 100%;
+            height: auto;
+            margin-top: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -171,11 +182,21 @@
         <div class="calculator-card">
             <h2>Calculadora de IRRF</h2>
             
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="index.html" style="text-decoration: none; color: var(--secondary-color); font-weight: 500;">← Voltar ao menu</a>
+            </div>
+            
             <div class="input-group">
                 <div class="input-field">
                     <label for="salarioBruto">Salário Base (R$)</label>
                     <input type="number" id="salarioBruto" placeholder="Ex: 5000.00" step="0.01" min="0">
                     <p class="info-text">Informe o salário após descontar o INSS</p>
+                </div>
+                
+                <div class="input-field">
+                    <label for="dependentes">Dependentes</label>
+                    <input type="number" id="dependentes" placeholder="Ex: 0" step="1" min="0" value="0">
+                    <p class="info-text">Informe o número de dependentes</p>
                 </div>
             </div>
             
@@ -189,17 +210,31 @@
             <div class="result-container" id="result-container" style="display: none;">
                 <div class="result-value" id="resultadoIRRF"></div>
                 <div class="tax-info" id="tax-info"></div>
+                <p class="info-text">O gráfico abaixo mostra a evolução do IRRF de acordo com o salário base.</p>
             </div>
+            
+            <img id="graficoIRRF" src="" alt="Gráfico de IRRF" style="display: none;">
             
             <p class="error-message" id="error-message"></p>
         </div>
     </div>
 
     <script>
+        // Função para formatar valores em reais
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            }).format(valor);
+        }
+        
         async function calcularIRRF() {
             const salario = parseFloat(document.getElementById("salarioBruto").value);
+            const dependentes = parseInt(document.getElementById("dependentes").value) || 0;
             const resultadoElement = document.getElementById("resultadoIRRF");
             const taxInfoElement = document.getElementById("tax-info");
+            const graficoElement = document.getElementById("graficoIRRF");
             const loadingElement = document.getElementById("loading");
             const errorElement = document.getElementById("error-message");
             const resultContainer = document.getElementById("result-container");
@@ -207,6 +242,7 @@
             // Resetar exibições
             resultadoElement.textContent = "";
             taxInfoElement.textContent = "";
+            graficoElement.style.display = "none";
             resultContainer.style.display = "none";
             errorElement.textContent = "";
             loadingElement.style.display = "block";
@@ -223,7 +259,7 @@
                 const res = await fetch("http://localhost:8000/api/irrf", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ salario })
+                    body: JSON.stringify({ salario, dependentes })
                 });
                 
                 if (!res.ok) {
@@ -231,14 +267,20 @@
                 }
                 
                 const resultado = await res.json();
-                resultadoElement.textContent = `Desconto IRRF: R$ ${resultado.irrf.toFixed(2)}`;
+                resultadoElement.textContent = `Desconto IRRF: ${formatarMoeda(resultado.irrf)} para um salário de ${formatarMoeda(salario)}`;
                 
-                // Adiciona informação sobre a faixa de tributação (se disponível na API)
-                if (resultado.faixa) {
-                    taxInfoElement.textContent = `Faixa de tributação: ${resultado.faixa}`;
+                // Informação sobre dependentes
+                if (dependentes > 0) {
+                    taxInfoElement.textContent = `Dedução por ${dependentes} dependente${dependentes > 1 ? 's' : ''} considerada no cálculo.`;
                 }
                 
                 resultContainer.style.display = "block";
+                
+                // Exibir o gráfico se estiver disponível
+                if (resultado.graficoUrl) {
+                    graficoElement.src = resultado.graficoUrl;
+                    graficoElement.style.display = "block";
+                }
                 
             } catch (error) {
                 console.error("Erro:", error);

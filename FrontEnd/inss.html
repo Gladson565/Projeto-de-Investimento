@@ -176,6 +176,10 @@
         <div class="calculator-card">
             <h2>Calculadora de INSS</h2>
             
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="index.html" style="text-decoration: none; color: var(--secondary-color); font-weight: 500;">← Voltar ao menu</a>
+            </div>
+            
             <div class="input-group">
                 <div class="input-field">
                     <label for="salarioINSS">Salário Bruto (R$)</label>
@@ -193,6 +197,7 @@
             
             <div class="result-container" id="result-container" style="display: none;">
                 <div class="result-value" id="resultadoINSS"></div>
+                <p class="info-text">O gráfico abaixo mostra a evolução do desconto de INSS de acordo com o salário bruto.</p>
             </div>
             
             <img id="graficoINSS" src="" alt="Gráfico de desconto INSS" style="display: none;">
@@ -202,6 +207,15 @@
     </div>
 
     <script>
+        // Função para formatar valores em reais
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            }).format(valor);
+        }
+        
         async function calcularINSS() {
             const salario = parseFloat(document.getElementById("salarioINSS").value);
             const resultadoElement = document.getElementById("resultadoINSS");
@@ -225,6 +239,9 @@
             }
             
             try {
+                console.log("Enviando requisição para:", "http://localhost:8000/api/inss");
+                console.log("Dados:", JSON.stringify({ salario: salario }));
+                
                 const res = await fetch("http://localhost:8000/api/inss", {
                     method: "POST",
                     headers: {
@@ -233,14 +250,17 @@
                     body: JSON.stringify({ salario: salario })
                 });
 
-                const data = await res.json();
-                loadingElement.style.display = "none";
-
                 if (!res.ok) {
-                    throw new Error(data.message || "Erro ao calcular o INSS");
+                    const errorText = await res.text();
+                    console.error("Resposta de erro:", errorText);
+                    throw new Error(`Erro no servidor: ${res.status} ${res.statusText}`);
                 }
 
-                resultadoElement.textContent = `Desconto de INSS: R$ ${data.desconto.toFixed(2)}`;
+                const data = await res.json();
+                console.log("Resposta recebida:", data);
+                
+                loadingElement.style.display = "none";
+                resultadoElement.textContent = `Desconto de INSS: ${formatarMoeda(data.desconto)} para um salário de ${formatarMoeda(salario)}`;
                 resultContainer.style.display = "block";
 
                 if (data.graficoUrl) {
@@ -249,8 +269,9 @@
                 }
 
             } catch (error) {
+                console.error("Erro na requisição:", error);
                 loadingElement.style.display = "none";
-                errorElement.textContent = error.message;
+                errorElement.textContent = "Ocorreu um erro ao calcular o INSS. Por favor, tente novamente.";
             }
         }
     </script>

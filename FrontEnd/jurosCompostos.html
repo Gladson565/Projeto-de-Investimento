@@ -164,12 +164,23 @@
             text-align: center;
             font-weight: 500;
         }
+
+        .info-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="calculator-card">
             <h2>Calculadora de Juros Compostos</h2>
+            
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="index.html" style="text-decoration: none; color: var(--secondary-color); font-weight: 500;">← Voltar ao menu</a>
+            </div>
             
             <div class="input-group">
                 <div class="input-field">
@@ -202,6 +213,7 @@
             
             <div class="result-container">
                 <p id="resultado"></p>
+                <p class="info-text" id="info-grafico" style="display: none;">O gráfico abaixo mostra a evolução do seu investimento ao longo do tempo, comparado com a correção pela inflação.</p>
                 <img id="grafico" src="" alt="Gráfico de evolução dos juros" style="display: none;">
             </div>
             
@@ -210,6 +222,15 @@
     </div>
 
     <script>
+        // Função para formatar valores em reais
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            }).format(valor);
+        }
+        
         async function calcularJurosCompostos() {
             const capital = parseFloat(document.getElementById("capitalJuros").value);
             const taxa = parseFloat(document.getElementById("taxaJuros").value);
@@ -218,12 +239,14 @@
             
             const resultadoElement = document.getElementById("resultado");
             const graficoElement = document.getElementById("grafico");
+            const infoGraficoElement = document.getElementById("info-grafico");
             const loadingElement = document.getElementById("loading");
             const errorElement = document.getElementById("error-message");
             
             // Resetar exibições
             resultadoElement.innerText = "";
             graficoElement.style.display = "none";
+            infoGraficoElement.style.display = "none";
             errorElement.innerText = "";
             loadingElement.style.display = "block";
             
@@ -247,7 +270,7 @@
                 }
                 
                 const json = await resMontante.json();
-                resultadoElement.innerText = `Montante Final: R$ ${json.montante.toFixed(2)}`;
+                resultadoElement.innerText = `Montante Final: ${formatarMoeda(json.montante)}`;
                 
                 // Chamada para geração do gráfico
                 const resGrafico = await fetch("http://localhost:8000/api/grafico", {
@@ -269,6 +292,7 @@
                 const grafico = await resGrafico.json();
                 graficoElement.src = `data:image/png;base64,${grafico.grafico_base64}`;
                 graficoElement.style.display = "block";
+                infoGraficoElement.style.display = "block";
                 
             } catch (error) {
                 console.error("Erro:", error);

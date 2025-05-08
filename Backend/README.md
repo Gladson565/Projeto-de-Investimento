@@ -1,132 +1,234 @@
-# Backend - Projeto de Investimentos
+# Backend da Calculadora Financeira
 
-Bem-vindo ao **coração do sistema**! Aqui vamos explicar tudo o que acontece dentro do backend (a parte "invisível" que faz os cálculos e responde aos pedidos do site), passo a passo, como se estivéssemos contando uma história para uma criança.
+Este diretório contém o backend Python (FastAPI) da Calculadora Financeira.
 
----
+## Estrutura de Arquivos
 
-## 🏡 O que é o backend?
+- `main.py`: Ponto de entrada da aplicação, define as rotas da API
+- `impostos.py`: Cálculos de IRRF e geração de gráficos
+- `inss.py`: Cálculos de INSS e geração de gráficos
+- `investimentos.py`: Cálculos de juros compostos
+- `investimentos_aportes.py`: Cálculos de juros com aportes
+- `equacao_reta.py`: Cálculos de equação da reta e geração de gráficos
+- `graficos.py`: Funções para geração de gráficos
+- `requirements.txt`: Lista de dependências do projeto
 
-Imagine que você vai até uma lanchonete. O **frontend** é o cardápio e o atendente que anota seu pedido. O **backend** é a **cozinha**, onde o lanche é preparado.
+## Instalação
 
-No nosso projeto, quando o usuário envia dados (como quanto quer investir), é o backend que faz as contas e devolve a resposta.
+### 1. Configurar o Ambiente Virtual
 
----
+Na pasta raiz do projeto, crie e ative um ambiente virtual:
 
-## 📂 Estrutura da Pasta
-
-```
-/backend
-├── server.js             # Gerente do sistema, liga tudo
-├── /controllers          # Chefs de cozinha: fazem os cálculos
-├── /routes               # Garçons: recebem o pedido e entregam para os chefs
-├── /middlewares          # Segurança: checam se os pedidos estão certos
-├── /utils                # Ajudantes: funções extras que ajudam nos cálculos
-├── /config               # Configurações (ex: banco de dados)
-```
-
----
-
-## 🚀 Como tudo funciona?
-
-1. O usuário envia uma informação (por exemplo: investir R$100 por mês durante 12 meses com 1% de juros).
-2. A **rota** recebe o pedido e chama o **controller**.
-3. O **controller** faz os cálculos e devolve a resposta (como um chef fazendo um prato).
-4. O sistema responde com o resultado pronto!
-
----
-
-## 📊 Explicando os algoritmos dos controllers
-
-### 1. Investimentos com juros compostos
-
-No `investimentosController.js`, temos uma função que calcula o valor final de um investimento com aportes mensais.
-
-**Lógica:**
-Para cada mês, somamos o aporte e aplicamos a taxa de juros:
-```javascript
-let montante = 0;
-for (let i = 1; i <= tempoMeses; i++) {
-  montante = (montante + aporteMensal) * (1 + taxaJuros / 100);
-}
-```
-Isso simula o crescimento do dinheiro mês a mês.
-
----
-
-### 2. IRRF (Imposto de Renda)
-
-Para calcular o IRRF, usamos as **faixas da tabela oficial**. Primeiro subtraímos a dedução por dependentes do salário, depois aplicamos a alíquota da faixa correspondente.
-
-**Exemplo:**
-```javascript
-let base = salarioBruto - (dependentes * 189.59);
-// Aplica a alíquota com base na faixa salarial
-```
-
----
-
-### 3. INSS
-
-Usamos a tabela progressiva do INSS. Calculamos quanto pagar em cada faixa e somamos.
-
-**Exemplo:**
-```javascript
-// Salário até R$1518 → 7.5%
-// Parte entre R$1518 e R$2793,88 → 9%, e assim por diante
-```
-
----
-
-### 4. Equação da reta
-
-Recebemos dois pontos (x1, y1) e (x2, y2) e calculamos:
-- Coeficiente angular (a): `(y2 - y1) / (x2 - x1)`
-- Termo independente (b): `y1 - a * x1`
-
-Depois mostramos a equação: `f(x) = ax + b`, e os pontos onde toca os eixos.
-
----
-
-## ⚙️ Como rodar o backend
-
-1. Abra o terminal e digite:
 ```bash
-cd backend
-npm install
-node server.js
+# Criar ambiente virtual
+python -m venv venv
+
+# Ativar no Windows
+venv\Scripts\activate
+
+# Ativar no Linux/Mac
+source venv/bin/activate
 ```
-2. O servidor vai dizer: `Servidor rodando na porta 3000`
-3. Agora ele está pronto para responder pedidos!
+
+### 2. Instalar Dependências
+
+Com o ambiente virtual ativado, instale as dependências:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Executando o Servidor
+
+Para iniciar o servidor de desenvolvimento:
+
+```bash
+uvicorn main:app --reload
+```
+
+O servidor estará disponível em `http://127.0.0.1:8000` ou `http://localhost:8000`.
+
+## Endpoints da API
+
+### Juros Compostos
+- `/api/juros-compostos`: Calcula o montante de juros compostos
+- `/api/juros-compostos-grafico`: Gera dados para gráfico de juros
+- `/api/grafico`: Gera um gráfico de evolução de investimento
+
+### Aportes
+- `/api/juros-aporte`: Calcula montante com aportes mensais
+
+### Impostos
+- `/api/inss`: Calcula o desconto do INSS com base no salário
+- `/api/irrf`: Calcula o imposto de renda
+
+### Equação da Reta
+- `/api/equacao-reta-grafico`: Gera gráfico a partir de dois pontos
+
+## Documentação da API
+
+A documentação interativa da API está disponível em:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+# 📊 Projeto de Cálculos Matemáticos em Python
+
+Este projeto tem como objetivo realizar diferentes tipos de cálculos matemáticos e financeiros usando Python, incluindo a visualização gráfica das funções. Os seguintes tópicos foram abordados:
 
 ---
 
-## 📢 Exemplo de uso (com Postman ou Insomnia)
+## 🧮 1. Juros Compostos
 
-- Rota: `POST http://localhost:3000/api/investimentos/calcular`
-- Corpo:
-```json
-{
-  "aporteMensal": 1000,
-  "taxaJuros": 1,
-  "tempoMeses": 12
-}
-```
-- Resposta esperada:
-```json
-{
-  "montante": "12735.52"
-}
-```
+### 📘 Fórmula:
+\[
+M = C \cdot (1 + i)^t
+\]
 
----
+- `M`: Montante final  
+- `C`: Capital inicial  
+- `i`: Taxa de juros (mensal, anual, etc.)  
+- `t`: Tempo (meses, anos, etc.)
 
-## 💪 Em breve...
-- Cálculos de inflação (IPCA)
-- Gráficos comparando crescimento do dinheiro
-- Integração com Python para cálculos matemáticos
-- Banco de dados para salvar os resultados
+### 📥 Entrada:
+
+- Capital: `float`
+- Taxa de juros (em %): `float`
+- Tempo: `int`
+
+### 📤 Saída:
+- Montante final
+- Gráfico da evolução do capital ao longo do tempo
 
 ---
 
-Feito com muito carinho e cálculo ❤️ por **Gladson**
+## 💰 2. Juros Compostos com Aportes Mensais
+
+### 📘 Fórmula:
+\[
+M = C \cdot (1 + i)^t + A \cdot \frac{(1 + i)^t - 1}{i}
+\]
+
+- `A`: Valor do aporte mensal
+
+### 📥 Entrada:
+- Capital inicial
+- Taxa de juros
+- Tempo (meses)
+- Aporte mensal
+
+### 📤 Saída:
+- Montante final
+- Gráfico mostrando a curva de crescimento com aportes
+
+---
+
+## 🧾 3. Cálculo de INSS
+
+### 📘 Tabela Progressiva (valores de exemplo):
+| Faixa Salarial         | Alíquota (%) |
+|------------------------|--------------|
+| Até R$ 1.320,00        | 7,5%         |
+| R$ 1.320,01 a R$ 2.571,29 | 9%       |
+| R$ 2.571,30 a R$ 3.856,94 | 12%      |
+| R$ 3.856,95 a R$ 7.507,49 | 14%      |
+
+> A tabela é aplicada de forma **progressiva**, ou seja, cada faixa é tributada separadamente.
+
+### 📥 Entrada:
+- Salário bruto
+
+### 📤 Saída:
+- Valor do desconto de INSS
+- Salário base para IRRF
+
+---
+
+## 📉 4. Cálculo de IRRF
+
+### 📘 Tabela Progressiva (valores de exemplo):
+| Faixa Base de Cálculo      | Alíquota (%) | Parcela a Deduzir (R$) |
+|----------------------------|---------------|-------------------------|
+| Até R$ 2.112,00            | Isento        | -                       |
+| R$ 2.112,01 a R$ 2.826,65  | 7,5%          | 158,40                  |
+| R$ 2.826,66 a R$ 3.751,05  | 15%           | 370,40                  |
+| R$ 3.751,06 a R$ 4.664,68  | 22,5%         | 651,73                  |
+| Acima de R$ 4.664,68       | 27,5%         | 884,96                  |
+
+### 📥 Entrada:
+- Salário bruto
+
+### 📤 Saída:
+- Valor do desconto de IRRF
+- Salário líquido final
+
+---
+
+## 📐 5. Equação da Reta (Função do 1º Grau)
+
+### 📘 Fórmula da função:
+\[
+f(x) = ax + b
+\]
+
+- `a`: Coeficiente angular (inclinação da reta)  
+- `b`: Coeficiente linear (intercepto no eixo y)
+
+### 📥 Entrada:
+- Dois pontos no plano cartesiano: `(x1, y1)` e `(x2, y2)`
+
+### 🧮 Cálculos realizados:
+- **Coeficiente angular (a):**
+  \[
+  a = \frac{y2 - y1}{x2 - x1}
+  \]
+- **Coeficiente linear (b):**
+  \[
+  b = y1 - a \cdot x1
+  \]
+- **Intercepto x (quando y = 0):**
+  \[
+  x = -\frac{b}{a}
+  \]
+- **Intercepto y (quando x = 0):**
+  \[
+  f(0) = b
+  \]
+
+### 📤 Saída:
+- Equação da reta `f(x) = ax + b`
+- Ponto de intercepto com o eixo X
+- Ponto de intercepto com o eixo Y
+- **Gráfico** da função com destaque para:
+  - Pontos informados
+  - Intercepto no eixo X (vermelho)
+  - Intercepto no eixo Y (verde)
+
+---
+
+## 📊 Visualização Gráfica
+
+Todos os gráficos foram gerados usando a biblioteca `matplotlib`, com destaque para:
+- Estilização dos pontos calculados
+- Legendas explicativas
+- Título e rótulos nos eixos
+
+---
+
+## 🛠 Tecnologias Utilizadas
+
+- Python 3.x
+- Matplotlib
+- VS Code / Terminal Git / Terminal Powershell
+
+---
+
+## 📂 Estrutura do Projeto
+
+calculos/ ├── juros_compostos.py ├── juros_compostos_com_aportes.py ├── inss.py ├── irrf.py ├── equacao_reta.py ├── README.md
+
+
+---
+## ✍️ Autor
+
+Desenvolvido por Gladson M Andrde como parte de estudo e prática com Python, matemática financeira e visualização de dados.
 
